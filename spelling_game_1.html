@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruby's Daily Spelling Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .admin-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .admin-section h2 {
+            color: #764ba2;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .game-section {
+            text-align: center;
+        }
+
+        .word-display {
+            background: #667eea;
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            font-size: 1.5em;
+        }
+
+        .speaker-btn {
+            background: #764ba2;
+            color: white;
+            border: none;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            font-size: 40px;
+            cursor: pointer;
+            margin: 20px auto;
+            display: block;
+            transition: all 0.3s;
+        }
+
+        .speaker-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .feedback {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .correct {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+
+        .incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #dc3545;
+        }
+
+        .joke-container {
+            background: #fff3cd;
+            border: 3px solid #ffc107;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 20px;
+            font-size: 20px;
+            line-height: 1.6;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .progress {
+            text-align: center;
+            font-size: 20px;
+            color: #764ba2;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .complete {
+            background: #28a745;
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 24px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Ruby's Daily Spelling Game</h1>
+        
+        <div class="admin-section" id="adminSection">
+            <h2>📝 Set This Week's Spellings (Admin)</h2>
+            <p style="margin-bottom: 10px; color: #666;">Enter 10 words, one per line:</p>
+            <textarea id="wordInput" placeholder="beautiful&#10;necessary&#10;accommodate&#10;definitely&#10;separate&#10;occurred&#10;beginning&#10;appearance&#10;environment&#10;embarrass"></textarea>
+            <button class="btn" onclick="saveWords()">Save Words & Start Game</button>
+        </div>
+
+        <div class="game-section hidden" id="gameSection">
+            <div class="progress" id="progress">Word 1 of 10</div>
+            
+            <div class="word-display">
+                <p style="margin-bottom: 10px;">🎯 Spell the word:</p>
+                <button class="speaker-btn" onclick="speakWord()" title="Click to hear the word">🔊</button>
+                <p style="font-size: 0.8em; color: #e0e0e0;">Click the speaker to hear the word</p>
+            </div>
+
+            <input type="text" id="answerInput" placeholder="Type your spelling here..." onkeypress="checkEnter(event)">
+            
+            <button class="btn" onclick="checkSpelling()">Submit Answer</button>
+
+            <div id="feedback"></div>
+            <div id="jokeContainer"></div>
+        </div>
+
+        <div class="complete hidden" id="completeSection">
+            <h2>🎉 AMAZING WORK!</h2>
+            <p style="margin-top: 20px;">You've mastered all 10 spellings!</p>
+            <p style="margin-top: 20px; font-size: 18px;">Come back next Saturday for new words!</p>
+            <button class="btn" onclick="resetGame()" style="margin-top: 20px;">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        let words = [];
+        let currentWordIndex = 0;
+        let correctWords = new Set();
+
+        const jokes = [
+            "Why did the scarecrow win an award? Because he was outstanding in his field! 🌾",
+            "What do you call a bear with no teeth? A gummy bear! 🐻",
+            "Why don't scientists trust atoms? Because they make up everything! ⚛️",
+            "What do you call a dinosaur that crashes his car? Tyrannosaurus Wrecks! 🦖",
+            "Why did the bicycle fall over? Because it was two-tired! 🚲",
+            "What do you call a fish wearing a bowtie? Sofishticated! 🐟",
+            "Why did the math book look so sad? Because it had too many problems! 📚",
+            "What do you call a sleeping bull? A bulldozer! 🐂",
+            "Why don't eggs tell jokes? They'd crack each other up! 🥚",
+            "What do you call a pig that does karate? A pork chop! 🥋"
+        ];
+
+        function saveWords() {
+            const input = document.getElementById('wordInput').value.trim();
+            const wordList = input.split('\n').filter(w => w.trim().length > 0);
+            
+            if (wordList.length !== 10) {
+                alert('Please enter exactly 10 words, one per line!');
+                return;
+            }
+
+            words = wordList.map(w => w.trim().toLowerCase());
+            currentWordIndex = 0;
+            correctWords.clear();
+            
+            document.getElementById('adminSection').classList.add('hidden');
+            document.getElementById('gameSection').classList.remove('hidden');
+            document.getElementById('completeSection').classList.add('hidden');
+            
+            updateProgress();
+            speakWord();
+        }
+
+        function speakWord() {
+            if (words.length === 0) return;
+            
+            const word = words[currentWordIndex];
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.rate = 0.8;
+            utterance.pitch = 1;
+            utterance.volume = 1;
+            
+            speechSynthesis.cancel();
+            speechSynthesis.speak(utterance);
+        }
+
+        function checkSpelling() {
+            const input = document.getElementById('answerInput');
+            const userAnswer = input.value.trim().toLowerCase();
+            const correctAnswer = words[currentWordIndex];
+            const feedback = document.getElementById('feedback');
+            const jokeContainer = document.getElementById('jokeContainer');
+
+            if (!userAnswer) {
+                alert('Please type your spelling!');
+                return;
+            }
+
+            if (userAnswer === correctAnswer) {
+                feedback.className = 'feedback correct';
+                feedback.textContent = '✅ Correct! Well done!';
+                
+                const joke = jokes[currentWordIndex % jokes.length];
+                jokeContainer.className = 'joke-container';
+                jokeContainer.innerHTML = `
+                    <strong>🎭 Your Joke:</strong><br><br>${joke}
+                    <br><br>
+                    <button class="btn" onclick="nextWord()">Next Word ➡️</button>
+                `;
+                
+                correctWords.add(currentWordIndex);
+                input.value = '';
+                input.disabled = true;
+                document.querySelector('.game-section .btn').disabled = true;
+            } else {
+                feedback.className = 'feedback incorrect';
+                feedback.textContent = '❌ Not quite right. Try again!';
+                input.value = '';
+                setTimeout(() => speakWord(), 1000);
+            }
+        }
+
+        function checkEnter(event) {
+            if (event.key === 'Enter') {
+                checkSpelling();
+            }
+        }
+
+        function nextWord() {
+            if (correctWords.size === words.length) {
+                document.getElementById('gameSection').classList.add('hidden');
+                document.getElementById('completeSection').classList.remove('hidden');
+            } else {
+                currentWordIndex++;
+                if (currentWordIndex >= words.length) {
+                    currentWordIndex = 0;
+                }
+                
+                while (correctWords.has(currentWordIndex)) {
+                    currentWordIndex++;
+                    if (currentWordIndex >= words.length) {
+                        currentWordIndex = 0;
+                    }
+                }
+                
+                const feedback = document.getElementById('feedback');
+                const jokeContainer = document.getElementById('jokeContainer');
+                const input = document.getElementById('answerInput');
+                
+                feedback.textContent = '';
+                feedback.className = '';
+                jokeContainer.textContent = '';
+                jokeContainer.className = '';
+                input.disabled = false;
+                document.querySelector('.game-section .btn').disabled = false;
+                
+                updateProgress();
+                speakWord();
+            }
+        }
+
+        function updateProgress() {
+            document.getElementById('progress').textContent = 
+                `Word ${correctWords.size + 1} of ${words.length}`;
+        }
+
+        function resetGame() {
+            document.getElementById('adminSection').classList.remove('hidden');
+            document.getElementById('gameSection').classList.add('hidden');
+            document.getElementById('completeSection').classList.add('hidden');
+            document.getElementById('answerInput').value = '';
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('feedback').className = '';
+            document.getElementById('jokeContainer').textContent = '';
+            document.getElementById('jokeContainer').className = '';
+        }
+    </script>
+</body>
+</html>

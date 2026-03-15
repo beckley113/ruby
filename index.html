@@ -227,18 +227,17 @@
         let currentWordIndex = 0;
         let correctWords = new Set();
 
-        const jokes = [
-            "Why did the scarecrow win an award? Because he was outstanding in his field! 🌾",
-            "What do you call a bear with no teeth? A gummy bear! 🐻",
-            "Why don't scientists trust atoms? Because they make up everything! ⚛️",
-            "What do you call a dinosaur that crashes his car? Tyrannosaurus Wrecks! 🦖",
-            "Why did the bicycle fall over? Because it was two-tired! 🚲",
-            "What do you call a fish wearing a bowtie? Sofishticated! 🐟",
-            "Why did the math book look so sad? Because it had too many problems! 📚",
-            "What do you call a sleeping bull? A bulldozer! 🐂",
-            "Why don't eggs tell jokes? They'd crack each other up! 🥚",
-            "What do you call a pig that does karate? A pork chop! 🥋"
-        ];
+        async function fetchJoke() {
+            try {
+                const response = await fetch('https://icanhazdadjoke.com/', {
+                    headers: { 'Accept': 'application/json' }
+                });
+                const data = await response.json();
+                return data.joke;
+            } catch {
+                return "Why did the scarecrow win an award? Because he was outstanding in his field!";
+            }
+        }
 
         function saveWords() {
             const input = document.getElementById('wordInput').value.trim();
@@ -289,14 +288,32 @@
             if (userAnswer === correctAnswer) {
                 feedback.className = 'feedback correct';
                 feedback.textContent = '✅ Correct! Well done!';
-                
-                const joke = jokes[currentWordIndex % jokes.length];
+
                 jokeContainer.className = 'joke-container';
-                jokeContainer.innerHTML = `
-                    <strong>🎭 Your Joke:</strong><br><br>${joke}
-                    <br><br>
-                    <button class="btn" onclick="nextWord()">Next Word ➡️</button>
-                `;
+                jokeContainer.textContent = 'Loading your joke...';
+
+                fetchJoke().then(joke => {
+                    jokeContainer.textContent = '';
+
+                    const label = document.createElement('strong');
+                    label.textContent = '🎭 Your Joke:';
+                    jokeContainer.appendChild(label);
+
+                    jokeContainer.appendChild(document.createElement('br'));
+                    jokeContainer.appendChild(document.createElement('br'));
+
+                    const jokeText = document.createTextNode(joke);
+                    jokeContainer.appendChild(jokeText);
+
+                    jokeContainer.appendChild(document.createElement('br'));
+                    jokeContainer.appendChild(document.createElement('br'));
+
+                    const nextBtn = document.createElement('button');
+                    nextBtn.className = 'btn';
+                    nextBtn.textContent = 'Next Word ➡️';
+                    nextBtn.onclick = nextWord;
+                    jokeContainer.appendChild(nextBtn);
+                });
                 
                 correctWords.add(currentWordIndex);
                 input.value = '';

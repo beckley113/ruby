@@ -195,9 +195,12 @@
             <p style="margin-bottom: 10px; color: #666;">Enter 10 words, one per line:</p>
             <textarea id="wordInput" placeholder="beautiful&#10;necessary&#10;accommodate&#10;definitely&#10;separate&#10;occurred&#10;beginning&#10;appearance&#10;environment&#10;embarrass"></textarea>
             <p style="margin-bottom: 10px; margin-top: 15px; color: #666;">Choose a voice:</p>
-            <select id="voiceSelect" style="width: 100%; padding: 10px; border: 2px solid #667eea; border-radius: 8px; font-size: 14px;">
-                <option value="">Loading voices...</option>
-            </select>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <select id="voiceSelect" style="flex: 1; padding: 10px; border: 2px solid #667eea; border-radius: 8px; font-size: 14px;">
+                    <option value="">Loading voices...</option>
+                </select>
+                <button class="btn" onclick="previewVoice()" style="margin-top: 0; white-space: nowrap;">🔊 Preview</button>
+            </div>
             <button class="btn" onclick="saveWords()">Save Words & Start Game</button>
         </div>
 
@@ -250,6 +253,17 @@
 
         speechSynthesis.onvoiceschanged = populateVoices;
         populateVoices();
+
+        function previewVoice() {
+            const voiceSelect = document.getElementById('voiceSelect');
+            const voices = speechSynthesis.getVoices();
+            const voice = voices[voiceSelect.value];
+            const utterance = new SpeechSynthesisUtterance('Hey Ruby, love you');
+            if (voice) utterance.voice = voice;
+            utterance.rate = 0.8;
+            speechSynthesis.cancel();
+            speechSynthesis.speak(utterance);
+        }
 
         async function fetchJoke() {
             try {
